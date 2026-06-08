@@ -1,101 +1,107 @@
-import Image from "next/image";
+import Link from "next/link";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
+      {/* Hero */}
+      <section className="container mx-auto px-4 py-20 text-center">
+        <h1 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6">
+          Publikuj na LinkedIn
+          <br />
+          <span className="text-blue-600">bez obaw o compliance</span>
+        </h1>
+        <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-10">
+          Pierwsza platforma dla prawnikow, lekarzy i doradcow finansowych,
+          ktora w czasie rzeczywistym sprawdza Twoja tresc pod katem regulacji
+          i automatycznie dodaje wymagane zastrzezenia.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link
+            href="/editor"
+            className="px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
           >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Wyprobuj za darmo — 14 dni
+          </Link>
+          <Link
+            href="#jak-to-dziala"
+            className="px-8 py-4 bg-white text-slate-700 border border-slate-300 rounded-lg font-semibold hover:bg-slate-50 transition"
           >
-            Read our docs
-          </a>
+            Zobacz jak dziala
+          </Link>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+      </section>
+
+      {/* Features */}
+      <section id="jak-to-dziala" className="container mx-auto px-4 py-16">
+        <h2 className="text-3xl font-bold text-center text-slate-900 mb-12">
+          Jak to dziala?
+        </h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          <FeatureCard
+            step="1"
+            title="Napisz post"
+            description="Uzyj edytora lub wybierz z biblioteki pre-approved szablonow."
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+          <FeatureCard
+            step="2"
+            title="Sprawdz compliance"
+            description="AI analizuje tresc w 30 sekund pod katem Kodeksu Etyki, KNF lub FINRA."
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
+          <FeatureCard
+            step="3"
+            title="Publikuj bezpiecznie"
+            description="System dodaje wymagane disclaimery i publikuje na LinkedIn z pelnym logiem audytowym."
           />
-          Go to nextjs.org →
-        </a>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="container mx-auto px-4 py-16 text-center">
+        <div className="bg-blue-600 rounded-2xl p-10 md:p-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Gotowy na bezpieczne publikowanie?
+          </h2>
+          <p className="text-blue-100 text-lg mb-8 max-w-xl mx-auto">
+            Dolacz do 10 pierwszych uzytkownikow beta i otrzymaj 50% znizki
+            na pierwszy rok.
+          </p>
+          <Link
+            href="/editor"
+            className="inline-block px-8 py-4 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition"
+          >
+            Rozpocznij za darmo
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="container mx-auto px-4 py-8 text-center text-slate-500 text-sm">
+        <p>
+          Compliance Platform — 2026. Nie stanowi porady prawnej.
+          Wszystkie wyniki wymagaja weryfikacji przez licencjonowanego
+          profesjonaliste.
+        </p>
       </footer>
+    </main>
+  );
+}
+
+function FeatureCard({
+  step,
+  title,
+  description,
+}: {
+  step: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200">
+      <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl font-bold mb-4">
+        {step}
+      </div>
+      <h3 className="text-xl font-semibold text-slate-900 mb-2">{title}</h3>
+      <p className="text-slate-600">{description}</p>
     </div>
   );
 }
