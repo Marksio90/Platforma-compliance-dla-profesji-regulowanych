@@ -1,0 +1,246 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  avatarUrl     String?
+  profession    Profession
+  licenseNumber String?
+  jurisdiction  String    @default("PL")
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  posts          Post[]
+  complianceChecks ComplianceCheck[]
+  auditLogs      AuditLog[]
+  subscription   Subscription?
+  accounts       Account[]
+  sessions       Session[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  @@index([email])
+  @@index([organizationId])
+  @@index([profession, jurisdiction])
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  plan        Plan     @default(STARTER)
+  maxUsers    Int      @default(1)
+  users       User[]
+  posts       Post[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([slug])
+}
+
+model Post {
+  id                String   @id @default(cuid())
+  title             String?
+  content           String
+  plainText         String
+  status            PostStatus @default(DRAFT)
+  complianceScore   Int?
+  complianceStatus  ComplianceStatus? @default(NOT_CHECKED)
+  complianceResult  Json?
+  disclaimers       String[]
+  finalContent      String?
+  publishedAt       DateTime?
+  linkedInPostId    String?
+  authorId          String
+  author            User     @relation(fields: [authorId], references: [id])
+  organizationId    String?
+  organization      Organization? @relation(fields: [organizationId], references: [id])
+  complianceChecks  ComplianceCheck[]
+  auditLogs         AuditLog[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  @@index([authorId])
+  @@index([status])
+  @@index([organizationId])
+  @@index([createdAt])
+}
+
+model ComplianceCheck {
+  id          String   @id @default(cuid())
+  postId      String
+  post        Post     @relation(fields: [postId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  profession  Profession
+  jurisdiction String
+  status      CheckStatus @default(PENDING)
+  score       Int?
+  issues      Json?
+  llmProvider String?
+  llmModel    String?
+  tokensUsed  Int?
+  latencyMs   Int?
+  rawResponse Json?
+  createdAt   DateTime @default(now())
+  @@index([postId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Disclaimer {
+  id          String   @id @default(cuid())
+  profession  Profession
+  jurisdiction String
+  category    DisclaimerCategory
+  label       String
+  text        String
+  textEn      String?
+  triggerRules Json?
+  isRequired  Boolean  @default(false)
+  priority    Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@unique([profession, jurisdiction, category, label])
+  @@index([profession, jurisdiction])
+  @@index([isActive])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  action      AuditAction
+  entityType  String
+  entityId    String
+  metadata    Json?
+  ipAddress   String?
+  userAgent   String?
+  previousHash String?
+  currentHash  String
+  postId      String?
+  post        Post?    @relation(fields: [postId], references: [id])
+  createdAt   DateTime @default(now())
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([currentHash])
+}
+
+model Subscription {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  plan        Plan     @default(STARTER)
+  status      SubscriptionStatus @default(TRIALING)
+  stripeCustomerId     String?  @unique
+  stripeSubscriptionId String?  @unique
+  stripePriceId        String?
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  maxPostsPerMonth     Int      @default(50)
+  usedPostsThisMonth   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([stripeCustomerId])
+  @@index([status])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@unique([identifier, token])
+}
+
+enum Profession {
+  LAWYER
+  DOCTOR
+  FINANCIAL_ADVISOR
+}
+
+enum Plan {
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum PostStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  PUBLISHED
+  REJECTED
+}
+
+enum ComplianceStatus {
+  NOT_CHECKED
+  PASS
+  WARNING
+  FAIL
+}
+
+enum CheckStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum DisclaimerCategory {
+  GENERAL
+  INVESTMENT
+  MEDICAL
+  LEGAL
+  TAX
+}
+
+enum AuditAction {
+  POST_CREATED
+  POST_EDITED
+  COMPLIANCE_CHECKED
+  POST_PUBLISHED
+  DISCLAIMER_ADDED
+  LOGIN
+  LOGOUT
+  USER_UPDATED
+  ORGANIZATION_UPDATED
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+}
