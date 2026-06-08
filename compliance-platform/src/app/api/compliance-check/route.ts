@@ -47,10 +47,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Create a test post if postId not provided (for MVP testing without auth)
+    let actualPostId = postId;
+    if (!actualPostId) {
+      const testPost = await prisma.post.create({
+        data: {
+          content,
+          plainText: content,
+          authorId: "test-user",
+          status: "DRAFT",
+        },
+      });
+      actualPostId = testPost.id;
+    }
+
+    // Create test user if not exists
+    const testUser = await prisma.user.upsert({
+      where: { id: "test-user" },
+      update: {},
+      create: {
+        id: "test-user",
+        email: "test@compliance.local",
+        name: "Test User",
+        profession: "LAWYER",
+        jurisdiction: "PL",
+      },
+    });
+
     const complianceCheck = await prisma.complianceCheck.create({
       data: {
-        postId: postId || "test",
-        userId: "test-user",
+        postId: actualPostId,
+        userId: testUser.id,
         profession,
         jurisdiction,
         status: "PENDING",
