@@ -41,16 +41,14 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    let userId = "anonymous";
     let userEmail = "anonymous";
     
     if (session?.user?.email) {
-      const dbUser = await prisma.user.findUnique({
+      const sessionUser = await prisma.user.findUnique({
         where: { email: session.user.email },
       });
-      if (dbUser) {
-        userId = dbUser.id;
-        userEmail = dbUser.email;
+      if (sessionUser) {
+        userEmail = sessionUser.email;
       }
     }
 
@@ -74,7 +72,7 @@ export async function POST(request: NextRequest) {
         data: {
           email: userEmail === "anonymous" ? "anonymous@compliance.local" : userEmail,
           name: session?.user?.name || "Anonymous",
-          profession: profession as any,
+          profession: profession as "LAWYER" | "DOCTOR" | "FINANCIAL_ADVISOR",
           jurisdiction,
         },
       });
