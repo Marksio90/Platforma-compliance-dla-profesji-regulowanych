@@ -1,0 +1,6 @@
+# Root .gitignore — applies to entire repo
+.env
+.env.local
+.env.*.local
+node_modules/
+.DS_Store
