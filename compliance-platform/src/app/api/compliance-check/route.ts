@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { openai } from "@/lib/openai";
 import { logAudit } from "@/lib/audit-logger";
@@ -37,6 +39,21 @@ WAZNE: Nie zalecaj konkretnych dzialan prawnych. Wskazuj tylko potencjalne probl
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    
+    let userId = "anonymous";
+    let userEmail = "anonymous";
+    
+    if (session?.user?.email) {
+      const dbUser = await prisma.user.findUnique({
+        where: { email: session.user.email },
+      });
+      if (dbUser) {
+        userId = dbUser.id;
+        userEmail = dbUser.email;
+      }
+    }
+
     const body = await request.json();
     const { postId, content, profession, jurisdiction } = body;
 
@@ -47,37 +64,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create test user if not exists
-    const testUser = await prisma.user.upsert({
-      where: { id: "test-user" },
-      update: {},
-      create: {
-        id: "test-user",
-        email: "test@compliance.local",
-        name: "Test User",
-        profession: "LAWYER",
-        jurisdiction: "PL",
-      },
+    // Get or create user
+    let dbUser = await prisma.user.findUnique({
+      where: { email: userEmail === "anonymous" ? "anonymous@compliance.local" : userEmail },
     });
-
-    // Create a test post if postId not provided (for MVP testing without auth)
-    let actualPostId = postId;
-    if (!actualPostId) {
-      const testPost = await prisma.post.create({
+    
+    if (!dbUser) {
+      dbUser = await prisma.user.create({
         data: {
-          content,
-          plainText: content,
-          authorId: testUser.id,
-          status: "DRAFT",
+          email: userEmail === "anonymous" ? "anonymous@compliance.local" : userEmail,
+          name: session?.user?.name || "Anonymous",
+          profession: profession as any,
+          jurisdiction,
         },
       });
-      actualPostId = testPost.id;
     }
+
+    // Create post
+    const post = await prisma.post.create({
+      data: {
+        content,
+        plainText: content,
+        authorId: dbUser.id,
+        status: "DRAFT",
+      },
+    });
+    const actualPostId = postId || post.id;
 
     const complianceCheck = await prisma.complianceCheck.create({
       data: {
         postId: actualPostId,
-        userId: testUser.id,
+        userId: dbUser.id,
         profession,
         jurisdiction,
         status: "PENDING",
@@ -144,7 +161,7 @@ export async function POST(request: NextRequest) {
     });
 
     await logAudit({
-      userId: "test-user",
+      userId: dbUser.id,
       action: "COMPLIANCE_CHECKED",
       entityType: "ComplianceCheck",
       entityId: complianceCheck.id,
