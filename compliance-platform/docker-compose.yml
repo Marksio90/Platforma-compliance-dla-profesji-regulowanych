@@ -16,5 +16,21 @@ services:
       timeout: 5s
       retries: 5
 
+  app:
+    build: .
+    container_name: compliance-app
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://compliance_user:compliance_pass@postgres:5432/compliance_db?schema=public"
+      NEXTAUTH_SECRET: "change-me-in-production"
+      NEXTAUTH_URL: "http://localhost:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+
 volumes:
   postgres_data:
