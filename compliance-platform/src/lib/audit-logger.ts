@@ -62,6 +62,7 @@ export async function logAudit(params: AuditLogParams): Promise<void> {
         action: params.action,
         entityType: params.entityType,
         entityId: params.entityId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         metadata: (params.metadata || {}) as any,
         ipAddress: params.ipAddress,
         userAgent: params.userAgent,
